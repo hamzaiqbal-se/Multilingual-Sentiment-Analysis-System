@@ -1,6 +1,6 @@
 # Multilingual Sentiment Analysis & Opinion Mining Engine
 
-An advanced Deep Learning-powered Sentiment Analysis system explicitly optimized for detecting emotional nuances in **English**, **Standard Urdu**, and **Roman Urdu** (Urdu written in Latin script). Built using the state-of-the-art **XLM-RoBERTa** architecture and wrapped in a lightweight Flask web application.
+An advanced Deep Learning-powered Sentiment Analysis system leveraging the state-of-the-art **XLM-RoBERTa** architecture. While natively utilizing cross-lingual language representations across 100+ languages, this engine is fine-tuned and benchmarked to evaluate emotional nuances in complex multilingual contexts, including English and Roman Urdu.
 
 ---
 
