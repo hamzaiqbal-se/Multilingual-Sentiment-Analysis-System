@@ -1,0 +1,89 @@
+/* 
+ * responsive.css
+ * Media queries for Mobile-First styling
+ */
+
+/* Extra small devices (phones, 0-575px) - Default styles apply */
+.container-premium {
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.hide-on-mobile {
+  display: none !important;
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  :root {
+      /* Slightly larger typography baseline if desired */
+      --text-base: 1.0625rem;
+  }
+  .grid-responsive {
+      gap: var(--space-6);
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .grid-responsive {
+      grid-template-columns: repeat(2, 1fr);
+  }
+  .hide-on-mobile {
+      display: flex !important; /* or block, assuming flex is common for nav links */
+  }
+  .md-flex-row {
+      flex-direction: row !important;
+  }
+  
+  /* Sidebar handling */
+  .sidebar-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: var(--space-8);
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .grid-responsive-3 {
+      grid-template-columns: repeat(3, 1fr);
+  }
+  .grid-responsive-4 {
+      grid-template-columns: repeat(4, 1fr);
+  }
+  .container-premium {
+      padding-left: var(--space-8);
+      padding-right: var(--space-8);
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .sidebar-layout {
+      grid-template-columns: 280px 1fr;
+  }
+}
+
+/* XXL devices (1400px and up) */
+@media (min-width: 1400px) {
+  .container-premium {
+      max-width: 1440px;
+  }
+}
+
+/* Utility for respecting user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Analysis Result - SentimentAI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .radial-progress { transform: rotate(-90deg); }
+    .radial-progress-circle {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s ease-out;
+    }
+    .matrix-bar-bg { background: rgba(0,0,0,0.05); }
+    .dark .matrix-bar-bg { background: rgba(255,255,255,0.05); }
+    .matrix-bar-fill { height: 100%; border-radius: 9999px; transition: width 1s ease-out; }
+    .word-badge { @apply px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-aos="fade-in">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('analyze') }}" class="w-12 h-12 rounded-xl bg-card border border-main text-muted hover:text-primary flex items-center justify-center transition-all">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-3xl font-black text-main tracking-tight">Analysis Result</h2>
+                <p class="text-muted font-medium text-sm">Neural sentiment extraction complete</p>
+            </div>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-4">
+            <form method="POST" action="{{ url_for('results') }}" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" name="action" value="save" class="h-12 px-6 rounded-xl font-black bg-accent-success text-white shadow-lg shadow-accent-success/20 hover:shadow-accent-success/40 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">bookmark_add</span>
+                    Save To History
+                </button>
+            </form>
+            
+            <div class="relative group">
+                <button class="h-12 px-6 rounded-xl font-black bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">ios_share</span>
+                    Export
+                </button>
+                <div class="absolute right-0 top-full mt-2 w-48 bg-card border border-main rounded-2xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all z-[110] p-2">
+                    <form method="POST" action="{{ url_for('download_pdf') }}" class="m-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="w-full text-left px-4 py-3 text-sm font-bold text-main hover:bg-primary/5 rounded-xl transition-colors flex items-center gap-3">
+                            <span class="material-symbols-outlined text-accent-danger">picture_as_pdf</span>
+                            PDF Download
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('results') }}" class="m-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" name="action" value="export_csv" class="w-full text-left px-4 py-3 text-sm font-bold text-main hover:bg-primary/5 rounded-xl transition-colors flex items-center gap-3">
+                            <span class="material-symbols-outlined text-accent-success">table_view</span>
+                            CSV Export
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="card-elevated glass-panel mb-12 relative overflow-hidden p-12 flex flex-col items-center text-center">
+        <span class="text-xs font-black text-muted uppercase tracking-[0.4em] mb-10 opacity-60">AI Verdict</span>
+        <div class="w-24 h-24 rounded-3xl mb-8 flex items-center justify-center text-white shadow-2xl"
+             style="background: linear-gradient(135deg, {% if (analysis.sentiment or 'Neutral') == 'Positive' %}#10b981{% elif (analysis.sentiment or 'Neutral') == 'Negative' %}#ef4444{% else %}#4f46e5{% endif %}, #3b82f6);">
+            <span class="material-symbols-outlined text-5xl">
+                {% if (analysis.sentiment or 'Neutral') == 'Positive' %}sentiment_satisfied
+                {% elif (analysis.sentiment or 'Neutral') == 'Negative' %}sentiment_dissatisfied
+                {% else %}sentiment_neutral{% endif %}
+            </span>
+        </div>
+        <h3 class="text-5xl font-black mb-2 {% if (analysis.sentiment or 'Neutral') == 'Positive' %}text-accent-success{% elif (analysis.sentiment or 'Neutral') == 'Negative' %}text-accent-danger{% else %}text-main{% endif %}">
+            {{ (analysis.sentiment or 'Neutral') }}
+        </h3>
+        <p class="text-muted font-bold tracking-wide italic">Document sentiment extraction complete</p>
+
+
+
+        {% if analysis.language %}
+        <div class="mt-4 flex items-center gap-2">
+            <span class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">translate</span>
+                {% if analysis.language == 'EN' %}🇬🇧 English{% elif analysis.language == 'UR' %}🇵🇰 Urdu{% elif analysis.language == 'FR' %}🇫🇷 French{% elif analysis.language == 'DE' %}🇩🇪 German{% elif analysis.language == 'ES' %}🇪🇸 Spanish{% elif analysis.language == 'AR' %}🇸🇦 Arabic{% elif analysis.language == 'ZH-CN' or analysis.language == 'ZH' %}🇨🇳 Chinese{% elif analysis.language == 'HI' %}🇮🇳 Hindi{% elif analysis.language == 'JA' %}🇯🇵 Japanese{% elif analysis.language == 'KO' %}🇰🇷 Korean{% elif analysis.language == 'PT' %}🇧🇷 Portuguese{% elif analysis.language == 'RU' %}🇷🇺 Russian{% elif analysis.language == 'IT' %}🇮🇹 Italian{% elif analysis.language == 'TR' %}🇹🇷 Turkish{% elif analysis.language == 'NL' %}🇳🇱 Dutch{% else %}🌐 {{ analysis.language }}{% endif %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <!-- Left: KPIs -->
+        <div class="lg:col-span-1 flex flex-col gap-8">
+            <!-- Confidence (SVG) -->
+            <div class="card-elevated glass-panel p-8 flex flex-col items-center gap-4">
+                <h6 class="text-[10px] font-black text-muted uppercase tracking-widest text-center w-full">Confidence</h6>
+                <div class="relative w-32 h-32 flex items-center justify-center">
+                    <svg class="radial-progress w-full h-full" viewBox="0 0 100 100">
+                        <circle class="stroke-bg-main" cx="50" cy="50" r="40" fill="none" stroke-width="8" opacity="0.1"></circle>
+                        <circle class="radial-progress-circle" cx="50" cy="50" r="40" stroke="#3b82f6" 
+                                stroke-dasharray="251.2" 
+                                stroke-dashoffset="{{ 251.2 * (1 - (analysis.confidence or 0) / 100) }}"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-2xl font-black text-main">{{ analysis.confidence or 0 }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Polarity (CSS) -->
+            <div class="card-elevated glass-panel p-8 flex flex-col justify-center gap-6">
+                <h6 class="text-[10px] font-black text-muted uppercase tracking-widest">Polarity spectrum</h6>
+                <div class="flex items-center gap-6">
+                    <span class="text-4xl font-black text-main">{{ "%.2f"|format(analysis.polarity or 0.0) }}</span>
+                    <div class="grow h-2 matrix-bar-bg rounded-full overflow-hidden relative">
+                        <div class="h-full bg-primary transition-all duration-1000" style="width: {{ (((analysis.polarity or 0.0) + 1) / 2) * 100 }}%"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between text-[9px] font-black text-muted uppercase tracking-tighter">
+                    <span>Critical</span>
+                    <span>Balanced</span>
+                    <span>Optimistic</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: Evaluation Matrix -->
+        <div class="lg:col-span-1 card-elevated glass-panel p-8 flex flex-col">
+            <h6 class="text-[10px] font-black text-muted uppercase tracking-widest mb-8 flex items-center gap-3">
+                <span class="material-symbols-outlined text-accent-secondary">analytics</span>
+                Evaluation Matrix
+            </h6>
+            <div class="grow flex flex-col gap-6 justify-center">
+                {% set metrics = [
+                    ('Confidence', (analysis.confidence or 0), '#3b82f6'),
+                    ('Intensity', ((analysis.polarity or 0)|abs * 100), '#6366f1'),
+                    ('Subjectivity', 75, '#8b5cf6'),
+                    ('Volume', [((analysis.text|length / 10)|int), 100]|min, '#ec4899'),
+                    ('Clarity', (analysis.clarity or 0), '#06b6d4')
+                ] %}
+                {% for label, val, color in metrics %}
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-end">
+                        <span class="text-[10px] font-black text-main uppercase tracking-widest">{{ label }}</span>
+                        <span class="text-[10px] font-bold text-muted">{{ val|int }}%</span>
+                    </div>
+                    <div class="w-full h-2 matrix-bar-bg rounded-full overflow-hidden">
+                        <div class="matrix-bar-fill" style="width: {{ val }}%; background-color: {{ color }};"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Word Cloud -->
+        <div class="lg:col-span-1 card-elevated glass-panel p-8 flex flex-col">
+            <h6 class="text-[10px] font-black text-muted uppercase tracking-widest mb-6 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">cloud</span>
+                Semantic Map
+            </h6>
+            {% if wordcloud_data %}
+            <div class="grow rounded-2xl overflow-hidden bg-main/5 flex items-center justify-center p-4">
+                {% if (wordcloud_data|string).endswith('.png') or (wordcloud_data|string).endswith('.jpg') or (wordcloud_data|string).startswith('wordcloud_') %}
+                    <img src="{{ url_for('static', filename='uploads/' + wordcloud_data) }}" alt="Sentiment Word Cloud" class="max-w-full h-auto object-contain hover:scale-105 transition-transform duration-500">
+                {% else %}
+                    <img src="data:image/png;base64,{{ wordcloud_data }}" alt="Sentiment Word Cloud" class="max-w-full h-auto object-contain hover:scale-105 transition-transform duration-500">
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="grow rounded-2xl border-2 border-dashed border-main flex flex-col items-center justify-center p-10 text-center">
+                <span class="material-symbols-outlined text-4xl text-muted mb-4">image_not_supported</span>
+                <p class="text-xs font-bold text-muted uppercase tracking-widest">No Cloud Data</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sub-Data Section: Tokens, Recommendation and Source -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <!-- Left: Extracted Tokens -->
+        <div class="card-elevated glass-panel p-8 flex flex-col gap-8">
+            <h6 class="text-[10px] font-black text-muted uppercase tracking-widest flex items-center gap-3">
+                <span class="material-symbols-outlined text-accent-success">label</span>
+                Analysis Tokens
+            </h6>
+            <div class="space-y-6">
+                <div>
+                    <p class="text-[9px] font-black text-accent-success uppercase tracking-widest mb-3 opacity-60">Optimistic Markers</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% if analysis.positive_words %}
+                            {% for word in analysis.positive_words[:15] %}
+                                <span class="word-badge bg-accent-success/10 text-accent-success border border-accent-success/20">{{ word }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-xs italic text-muted">No positive markers detected</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <p class="text-[9px] font-black text-accent-danger uppercase tracking-widest mb-3 opacity-60">Critical Markers</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% if analysis.negative_words %}
+                            {% for word in analysis.negative_words[:15] %}
+                                <span class="word-badge bg-accent-danger/10 text-accent-danger border border-accent-danger/20">{{ word }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-xs italic text-muted">No negative markers detected</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Recommendation + Source -->
+        <div class="flex flex-col gap-8">
+            {% if analysis.recommended_action %}
+            <div class="card-elevated p-8 border border-primary/20 bg-primary/5 rounded-[2rem] flex flex-col justify-center">
+                <h6 class="text-[10px] font-black text-primary uppercase tracking-widest mb-4 flex items-center gap-3">
+                    <span class="material-symbols-outlined">auto_awesome</span>
+                    Strategic Recommendation
+                </h6>
+                <p class="text-base font-bold text-main leading-relaxed">{{ analysis.recommended_action }}</p>
+            </div>
+            {% endif %}
+
+            <div class="card-elevated glass-panel flex flex-col overflow-hidden grow">
+                <div class="p-6 border-b border-main bg-main/10 flex justify-between items-center">
+                    <h6 class="text-sm font-black text-main flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">description</span>
+                        Document Source
+                    </h6>
+                    <span class="text-[10px] font-bold text-muted bg-main px-3 py-1 rounded-full uppercase">{{ (analysis.text or "")|length }} Chars</span>
+                </div>
+                <div class="p-8 grow text-muted font-medium italic leading-relaxed overflow-y-auto max-h-[300px] styled-scrollbar" style="white-space: pre-wrap;">
+                    "{{ analysis.text or "" }}"
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

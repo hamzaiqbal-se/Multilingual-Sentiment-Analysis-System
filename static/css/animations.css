@@ -1,0 +1,108 @@
+/* 
+ * Animation Definitions
+ * Core timing functions and durations 
+ */
+
+:root {
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 1000ms;
+}
+
+/* 1. Fade In */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn var(--duration-normal) var(--ease-smooth) forwards;
+}
+
+/* 2. Slide Up */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slideUp {
+  animation: slideUp var(--duration-normal) var(--ease-smooth) forwards;
+}
+
+/* 3. Scale In */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-scaleIn {
+  animation: scaleIn var(--duration-fast) var(--ease-bounce) forwards;
+}
+
+/* 4. Pulse */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.animate-pulse-fx {
+  animation: pulse 2s infinite var(--ease-smooth);
+}
+
+/* 5. Glow */
+@keyframes glow {
+  from { box-shadow: 0 0 5px var(--accent-primary); }
+  to { box-shadow: 0 0 20px var(--accent-primary); }
+}
+.animate-glow {
+  animation: glow 1.5s infinite alternate var(--ease-smooth);
+}
+
+/* 6. Shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+.animate-shake {
+  animation: shake 0.4s var(--ease-smooth);
+}
+
+/* 7. Rotate */
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-rotate {
+  animation: rotate 1s linear infinite;
+}
+
+/* 8. Bounce */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-bounce-fx {
+  animation: bounce 1s infinite var(--ease-smooth);
+}
+
+/* Additional utility classes for hovering and transitions */
+.transition-smooth {
+  transition: all var(--duration-normal) var(--ease-smooth);
+}
+.transition-fast {
+  transition: all var(--duration-fast) var(--ease-smooth);
+}

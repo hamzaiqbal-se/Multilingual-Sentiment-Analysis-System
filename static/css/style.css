@@ -1,0 +1,161 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .btn-primary {
+        @apply bg-primary text-white hover:bg-opacity-90 transition-all shadow-md rounded-full px-5 py-2 font-semibold flex items-center justify-center;
+    }
+    .btn-secondary {
+        @apply bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm rounded-full px-5 py-2 font-semibold flex items-center justify-center;
+    }
+    .glass-panel {
+    background-color: var(--glass-bg, var(--bg-secondary)) !important;
+    border: 1px solid var(--glass-border, var(--border-color)) !important;
+    color: var(--text-primary) !important;
+    /* Maintain nice effects */
+    backdrop-filter: blur(24px);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 25px -5px var(--shadow-color, rgba(0,0,0,0.1));
+}
+    .glass-card { background-color: var(--bg-secondary) !important; border: 1px solid var(--border-color) !important; backdrop-filter: blur(24px); border-radius: 1rem; box-shadow: 0 10px 15px -3px var(--shadow-color); }
+    .container-premium {
+        @apply max-w-7xl mx-auto;
+    }
+}
+
+/* * style.css
+ * Core overriding styles for the Sentiment Analysis App
+ */
+
+@import url('./themes.css');
+@import url('./animations.css');
+@import url('./components.css');
+@import url('./responsive.css');
+
+/* Global Resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
+
+/* Page Transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--duration-slow) var(--ease-smooth), transform var(--duration-slow) var(--ease-smooth);
+}
+
+/* Scrollbar custom style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary); 
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary); 
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary); 
+}
+
+/* Flash message container overrides if rendered directly by flask */
+.flashes {
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: var(--space-4);
+}
+.flashes li {
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-secondary);
+  border-left: 4px solid var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flashes li.error {
+  border-left-color: var(--accent-danger);
+}
+.flashes li.success {
+  border-left-color: var(--accent-success);
+}
+
+/* Helper text utility */
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- NEW UI IMPROVEMENTS --- */
+
+/* "Get Started" aur Login buttons ko rounded karne ke liye */
+.nav-link.btn, .btn-primary, .get-started-btn, button[type="submit"] {
+    border-radius: 50px !important; /* Corners rounded karne ke liye */
+    padding-left: 25px !important;
+    padding-right: 25px !important;
+    transition: all 0.3s ease;
+}
+
+/* Mobile par buttons ke darmiyan gap aur alignment */
+@media (max-width: 991px) {
+    .navbar-nav .btn, .nav-item .btn {
+        margin-top: 10px !important;
+        margin-bottom: 5px !important;
+        width: 100%; /* Mobile par buttons full width achhe lagte hain */
+        display: block;
+        text-align: center;
+    }
+}
+
+/* MOBILE UI FIX (Original drawer fix) */
+@media (max-width: 768px) {
+    #mobile-menu-drawer a, #mobile-menu-drawer button {
+        margin-bottom: 12px !important;
+        display: flex !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 16px !important;
+    }
+}

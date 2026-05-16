@@ -1,0 +1,101 @@
+<!-- Modern Footer Component -->
+<footer class="mt-20 border-t border-main bg-card/30 pt-20 pb-12 px-6 relative overflow-hidden backdrop-blur-md">
+    <!-- Subtle decorative top accent border -->
+    <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
+    
+    <div class="container-premium mx-auto">
+        <!-- Main Footer Content: Fixed Multi-Column Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+            <!-- Brand Column -->
+            <div class="flex flex-col items-start gap-6">
+                <a href="{{ url_for('index') }}" class="flex items-center gap-4 group">
+                    <div class="bg-primary p-2.5 rounded-xl group-hover:rotate-12 transition-transform shadow-lg shadow-primary/20">
+                        <span class="material-symbols-outlined text-white text-xl">insights</span>
+                    </div>
+                    <span class="font-black text-2xl tracking-tighter text-main">Sentiment<span class="text-primary">AI</span></span>
+                </a>
+                <p class="text-sm text-muted leading-relaxed font-medium">
+                    Decoding emotional intelligence through advanced neural language processing. Built for enterprise-scale data analysis.
+                </p>
+                <!-- Social Links -->
+                <div class="flex items-center gap-4 mt-2">
+                    <a href="#" class="w-10 h-10 rounded-xl bg-card border border-main flex items-center justify-center text-muted hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-[20px]">code</span>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-xl bg-card border border-main flex items-center justify-center text-muted hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-[20px]">public</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Links Column: Product -->
+            <div class="flex flex-col gap-6">
+                <h4 class="font-black text-main uppercase text-[10px] tracking-[0.3em] opacity-50">Analytics</h4>
+                <nav class="flex flex-col gap-4">
+                    <a href="{{ url_for('analyze') }}" class="text-sm font-bold text-muted hover:text-primary transition-all flex items-center gap-3 group">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary transition-colors"></span>
+                        Real-time NLP
+                    </a>
+                    <a href="{{ url_for('analyze') }}?tab=file" class="text-sm font-bold text-muted hover:text-primary transition-all flex items-center gap-3 group">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary transition-colors"></span>
+                        Batch Pipeline
+                    </a>
+                    <a href="{{ url_for('history') }}" class="text-sm font-bold text-muted hover:text-primary transition-all flex items-center gap-3 group">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary transition-colors"></span>
+                        History Archive
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Links Column: Platform -->
+            <div class="flex flex-col gap-6">
+                <h4 class="font-black text-main uppercase text-[10px] tracking-[0.3em] opacity-50">Platform</h4>
+                <nav class="flex flex-col gap-4">
+                    <a href="#" class="text-sm font-bold text-muted hover:text-primary transition-all flex items-center gap-3 group">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary transition-colors"></span>
+                        API Framework
+                    </a>
+                    <a href="#" class="text-sm font-bold text-muted hover:text-primary transition-all flex items-center gap-3 group">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary transition-colors"></span>
+                        Enterprise Security
+                    </a>
+                    <a href="#" class="text-sm font-bold text-muted hover:text-primary transition-all flex items-center gap-3 group">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary transition-colors"></span>
+                        Privacy Protocol
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Status Column / Quick Feedback -->
+            <div class="flex flex-col gap-6">
+                <h4 class="font-black text-main uppercase text-[10px] tracking-[0.3em] opacity-50">System Status</h4>
+                <div class="p-6 rounded-2xl bg-main/50 border border-main shadow-inner relative group">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="w-2.5 h-2.5 rounded-full bg-accent-success animate-pulse shadow-lg shadow-accent-success/40"></div>
+                        <span class="text-xs font-black text-main uppercase tracking-widest">Operational</span>
+                    </div>
+                    <p class="text-[10px] text-muted leading-relaxed font-bold">
+                        GLOBAL NLP CLUSTER: ACTIVE<br/>
+                        LATENCY: 34ms AVG
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="pt-8 border-t border-main flex flex-col md:flex-row items-center justify-between gap-6">
+            <p class="text-[11px] font-bold text-muted uppercase tracking-[0.2em]">
+                &copy; <span id="current-footer-year">2026</span> SentimentAI Intelligence Systems.
+            </p>
+            <div class="flex items-center gap-8">
+                <a href="#" class="text-[10px] font-black text-muted hover:text-primary transition-all uppercase tracking-widest">Legal</a>
+                <a href="#" class="text-[10px] font-black text-muted hover:text-primary transition-all uppercase tracking-widest">Terms</a>
+                <a href="#" class="text-[10px] font-black text-muted hover:text-primary transition-all uppercase tracking-widest">Cookie Policy</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('current-footer-year').textContent = new Date().getFullYear();
+</script>

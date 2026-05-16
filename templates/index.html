@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section with Advanced Mesh Gradients -->
+<section class="relative px-6 py-24 lg:py-40 overflow-hidden min-h-[80vh] flex items-center justify-center">
+    <!-- Sophisticated Mesh Gradient Background -->
+    <div class="absolute inset-0 -z-10 overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent-secondary/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-accent-success/10 rounded-full blur-[100px] animate-pulse" style="animation-delay: 4s;"></div>
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay"></div>
+    </div>
+
+    <div class="container-premium mx-auto relative z-10 text-center" data-aos="fade-up">
+        <div class="inline-flex items-center gap-3 bg-white/5 border border-white/10 backdrop-blur-2xl px-5 py-2 rounded-full mb-10 shadow-2xl">
+            <div class="w-2 h-2 rounded-full bg-accent-success animate-ping"></div>
+            <span class="text-main text-[11px] font-black uppercase tracking-[0.2em]">Next-Gen Neural Language Processing</span>
+        </div>
+        
+        <h1 class="text-6xl md:text-8xl font-black leading-[1.1] tracking-tighter text-main mb-10">
+            Decode the <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent-secondary">Soul</span><br class="hidden md:block" /> of Your Data
+        </h1>
+        
+        <p class="text-xl md:text-2xl text-muted max-w-3xl mx-auto leading-relaxed mb-12 font-medium">
+            SentimentAI delivers institutional-grade emotional intelligence through advanced NLP, transforming raw text into high-fidelity strategic insights.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <a href="{{ url_for('register') }}" class="btn-primary h-16 px-10 rounded-2xl font-black text-xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 flex items-center gap-4 group transition-all">
+                <span>Get Started Now</span>
+                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </a>
+            <a href="#demo-widget" class="h-16 px-10 rounded-2xl font-black text-xl flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 text-main hover:bg-white/10 transition-all">
+                <span>Live Demo</span>
+                <span class="material-symbols-outlined">play_circle</span>
+            </a>
+        </div>
+
+        <!-- Hero Stats Mockup for Professionalism -->
+        <div class="mt-24 flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">verified</span> <span class="font-black tracking-widest text-xs">ENTERPRISE READY</span></div>
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">lock</span> <span class="font-black tracking-widest text-xs">ENCRYPTED PIPELINES</span></div>
+            <div class="flex items-center gap-3"><span class="material-symbols-outlined text-3xl">language</span> <span class="font-black tracking-widest text-xs">GLOBAL NLP ENGINE</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- Advanced Live Demo Section -->
+<section id="demo-widget" class="px-6 py-32 relative bg-main/50">
+    <div class="container-premium mx-auto" data-aos="fade-up">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-xs font-black text-primary uppercase tracking-[0.3em] mb-4">Interative Experience</h2>
+                <h3 class="text-4xl md:text-5xl font-black text-main">Experience the Insight</h3>
+            </div>
+            
+            <div class="glass-panel p-2 border border-white/10 shadow-3xl">
+                <div class="bg-card rounded-[1.25rem] p-8 md:p-12">
+
+                    <!-- INPUT STATE -->
+                    <div id="demo-input-state">
+                        <div class="relative mb-3">
+                            <textarea id="demo-input" rows="5" 
+                                class="w-full bg-main/30 border-2 border-main rounded-2xl p-8 text-xl resize-none shadow-inner focus:ring-8 focus:ring-primary/5 focus:border-primary outline-none transition-all font-medium text-main placeholder-muted/50" 
+                                placeholder="Enter at least 2 words to analyze sentiment..."></textarea>
+                            <div class="absolute bottom-6 right-8 flex items-center gap-3">
+                                <span id="demo-word-count" class="text-xs font-black text-muted tabular-nums">0 words</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted mb-6 px-1">💡 Minimum 2 words required for analysis</p>
+
+                        <!-- Error message -->
+                        <div id="demo-error" class="hidden mb-4 px-5 py-3 bg-accent-danger/10 border border-accent-danger/20 rounded-xl text-xs font-bold text-accent-danger"></div>
+                        
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div class="flex items-center gap-4 text-muted">
+                                <span class="material-symbols-outlined text-lg">bolt</span>
+                                <span class="text-xs font-bold uppercase tracking-widest">Live Analysis Engine</span>
+                            </div>
+                            <button id="demo-btn" class="h-14 px-10 rounded-xl font-black bg-primary text-white shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                                Analyze Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RESULT STATE (hidden until analysis runs) -->
+                    <div id="demo-result-state" class="hidden">
+                        <!-- Result Header Row -->
+                        <div id="demo-result-panel" class="flex flex-col items-center text-center py-6 gap-4">
+                            <!-- Big emoji circle -->
+                            <div id="demo-result-emoji" class="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-2xl ring-8 transition-all duration-500"></div>
+                            <!-- Label -->
+                            <div>
+                                <p id="demo-result-label" class="text-2xl font-black uppercase tracking-widest mb-1"></p>
+                                <p id="demo-result-confidence" class="text-sm text-muted font-medium"></p>
+                            </div>
+                            <!-- Stats chips -->
+                            <div id="demo-result-chips" class="flex flex-wrap justify-center gap-3 mt-2"></div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/5 mt-2">
+                            <!-- Try Another button -->
+                            <button id="demo-reset-btn" class="flex items-center gap-2 h-11 px-6 rounded-xl text-sm font-black text-muted border border-main hover:border-primary hover:text-primary transition-all">
+                                <span class="material-symbols-outlined text-base">refresh</span> Try Another
+                            </button>
+                            <!-- CTA -->
+                            <a href="{{ url_for('register') }}" class="flex items-center gap-2 h-11 px-6 rounded-xl text-sm font-black bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">
+                                <span class="material-symbols-outlined text-base">rocket_launch</span> Get Full Analytics
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- NEW: How it Works Section (Professional Process) -->
+<section class="px-6 py-32 container-premium mx-auto">
+    <div class="text-center mb-20" data-aos="fade-up">
+        <h2 class="text-xs font-black text-primary uppercase tracking-[0.3em] mb-4">Precision Workflow</h2>
+        <h3 class="text-4xl md:text-5xl font-black text-main">Three Steps to Intelligence</h3>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+        <!-- Connecting Line (Desktop) -->
+        <div class="hidden md:block absolute top-16 left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-primary/20 via-accent-secondary/20 to-primary/20 -z-10"></div>
+        
+        <!-- Step 1 -->
+        <div class="flex flex-col items-center text-center group" data-aos="fade-up" data-aos-delay="100">
+            <div class="w-24 h-24 rounded-3xl bg-card border border-main flex items-center justify-center mb-8 shadow-xl group-hover:border-primary transition-all duration-500 relative bg-gradient-to-br from-white/5 to-white/0">
+                <span class="text-4xl font-black text-primary opacity-20 absolute -top-4 -left-4">01</span>
+                <span class="material-symbols-outlined text-4xl text-primary group-hover:scale-110 transition-transform">upload_file</span>
+            </div>
+            <h4 class="text-xl font-black text-main mb-4 tracking-tight">Data Ingestion</h4>
+            <p class="text-muted text-sm leading-relaxed max-w-[250px]">Upload single texts or massive datasets through our high-speed secure gateway.</p>
+        </div>
+        
+        <!-- Step 2 -->
+        <div class="flex flex-col items-center text-center group" data-aos="fade-up" data-aos-delay="200">
+            <div class="w-24 h-24 rounded-3xl bg-card border border-main flex items-center justify-center mb-8 shadow-xl group-hover:border-accent-secondary transition-all duration-500 relative bg-gradient-to-br from-white/5 to-white/0">
+                <span class="text-4xl font-black text-accent-secondary opacity-20 absolute -top-4 -left-4">02</span>
+                <span class="material-symbols-outlined text-4xl text-accent-secondary group-hover:rotate-12 transition-transform">neurology</span>
+            </div>
+            <h4 class="text-xl font-black text-main mb-4 tracking-tight">Neural Processing</h4>
+            <p class="text-muted text-sm leading-relaxed max-w-[250px]">Our transformer-based engines extract sentiment, polarity, and semantic markers.</p>
+        </div>
+        
+        <!-- Step 3 -->
+        <div class="flex flex-col items-center text-center group" data-aos="fade-up" data-aos-delay="300">
+            <div class="w-24 h-24 rounded-3xl bg-card border border-main flex items-center justify-center mb-8 shadow-xl group-hover:border-accent-success transition-all duration-500 relative bg-gradient-to-br from-white/5 to-white/0">
+                <span class="text-4xl font-black text-accent-success opacity-20 absolute -top-4 -left-4">03</span>
+                <span class="material-symbols-outlined text-4xl text-accent-success group-hover:scale-110 transition-transform">insights</span>
+            </div>
+            <h4 class="text-xl font-black text-main mb-4 tracking-tight">Strategic Output</h4>
+            <p class="text-muted text-sm leading-relaxed max-w-[250px]">Receive beautiful visualizations and actionable recommendations ready for export.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Features Grid (Fixed Multi-Column) -->
+<section class="px-6 py-32 bg-main/30 relative">
+    <div class="container-premium mx-auto text-center">
+        <div class="mb-20" data-aos="fade-up">
+            <h2 class="text-xs font-black text-primary uppercase tracking-[0.3em] mb-4">Core Capabilities</h2>
+            <h3 class="text-4xl md:text-5xl font-black text-main">Institutional-Grade Toolkit</h3>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1: Real-Time NLP -->
+            <div class="card-elevated glass-panel p-10 group text-left hover:border-primary/50 transition-all duration-500" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 text-primary shadow-lg shadow-primary/10 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                    <span class="material-symbols-outlined text-3xl">psychology</span>
+                </div>
+                <h3 class="text-2xl font-black mb-4 text-main tracking-tight">Real-Time NLP</h3>
+                <p class="text-muted font-medium leading-relaxed">Instantly evaluate text sentiment with sub-second latency and institutional confidence scoring.</p>
+            </div>
+
+            <!-- Feature 2: Batch Processing -->
+            <div class="card-elevated glass-panel p-10 group text-left hover:border-accent-success/50 transition-all duration-500" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-16 h-16 bg-accent-success/10 rounded-2xl flex items-center justify-center mb-8 text-accent-success shadow-lg shadow-accent-success/10 group-hover:bg-accent-success group-hover:text-white transition-all duration-500">
+                    <span class="material-symbols-outlined text-3xl">upload_file</span>
+                </div>
+                <h3 class="text-2xl font-black mb-4 text-main tracking-tight">Batch Pipeline</h3>
+                <p class="text-muted font-medium leading-relaxed">Process thousands of records simultaneously via secure .txt uploads for enterprise scale.</p>
+            </div>
+
+            <!-- Feature 3: Visual Analytics -->
+            <div class="card-elevated glass-panel p-10 group text-left hover:border-accent-secondary/50 transition-all duration-500" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-16 h-16 bg-accent-secondary/10 rounded-2xl flex items-center justify-center mb-8 text-accent-secondary shadow-lg shadow-accent-secondary/10 group-hover:bg-accent-secondary group-hover:text-white transition-all duration-500">
+                    <span class="material-symbols-outlined text-3xl">donut_large</span>
+                </div>
+                <h3 class="text-2xl font-black mb-4 text-main tracking-tight">Rich Visualizations</h3>
+                <p class="text-muted font-medium leading-relaxed">Dynamic SVG distribution charts, Word Clouds, and sentiment intensity tracking dashboards.</p>
+            </div>
+
+            <!-- Feature 4: Premium Exports -->
+            <div class="card-elevated glass-panel p-10 group text-left hover:border-accent-warning/50 transition-all duration-500" data-aos="fade-up" data-aos-delay="400">
+                <div class="w-16 h-16 bg-accent-warning/10 rounded-2xl flex items-center justify-center mb-8 text-accent-warning shadow-lg shadow-accent-warning/10 group-hover:bg-accent-warning group-hover:text-white transition-all duration-500">
+                    <span class="material-symbols-outlined text-3xl">picture_as_pdf</span>
+                </div>
+                <h3 class="text-2xl font-black mb-4 text-main tracking-tight">Premium Reporting</h3>
+                <p class="text-muted font-medium leading-relaxed">Generate stakeholder-ready PDF reports or raw CSV exports with one-click intelligence.</p>
+            </div>
+
+            <!-- Feature 5: Multilingual Support -->
+            <div class="card-elevated glass-panel p-10 group text-left hover:border-primary/50 transition-all duration-500" data-aos="fade-up" data-aos-delay="500">
+                <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 text-primary shadow-lg shadow-primary/10 group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                    <span class="material-symbols-outlined text-3xl">translate</span>
+                </div>
+                <h3 class="text-2xl font-black mb-4 text-main tracking-tight">Global Support</h3>
+                <p class="text-muted font-medium leading-relaxed">Automatic detection and analysis across 15+ major languages including Urdu, Hindi, and Arabic.</p>
+            </div>
+
+            <!-- Feature 6: History Management -->
+            <div class="card-elevated glass-panel p-10 group text-left hover:border-muted/50 transition-all duration-500" data-aos="fade-up" data-aos-delay="600">
+                <div class="w-16 h-16 bg-card rounded-2xl border border-main flex items-center justify-center mb-8 text-muted shadow-lg group-hover:bg-main group-hover:text-main transition-all duration-500">
+                    <span class="material-symbols-outlined text-3xl">history</span>
+                </div>
+                <h3 class="text-2xl font-black mb-4 text-main tracking-tight">Archive Engine</h3>
+                <p class="text-muted font-medium leading-relaxed">Secure, searchable historical repository for all past analyses and batch processing runs.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics / Social Proof (Fixed Multi-Column) -->
+<section class="px-6 py-24 relative bg-main border-y border-main overflow-hidden">
+    <div class="absolute inset-0 bg-primary/5 -skew-y-3 transform origin-right"></div>
+    <div class="container-premium mx-auto relative z-10">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center" data-aos="fade-up">
+            <div class="flex flex-col gap-3">
+                <span class="text-5xl md:text-7xl font-black text-main tracking-tighter">12k+</span>
+                <span class="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Analyses Run</span>
+            </div>
+            <div class="flex flex-col gap-3">
+                <span class="text-5xl md:text-7xl font-black text-accent-success tracking-tighter">{{ avg_rating if avg_rating else '4.9' }}</span>
+                <span class="text-[10px] font-black text-accent-success uppercase tracking-[0.3em]">Avg Satisfaction</span>
+            </div>
+            <div class="flex flex-col gap-3">
+                <span class="text-5xl md:text-7xl font-black text-accent-secondary tracking-tighter">{{ total_feedback if total_feedback else '1.2k' }}</span>
+                <span class="text-[10px] font-black text-accent-secondary uppercase tracking-[0.3em]">User Reviews</span>
+            </div>
+            <div class="flex flex-col gap-3">
+                <span class="text-5xl md:text-7xl font-black text-main tracking-tighter">99.9%</span>
+                <span class="text-[10px] font-black text-muted uppercase tracking-[0.3em]">Engine Uptime</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- User Experiences Section (Fixed Multi-Column) -->
+<section id="feedback-section" class="px-6 py-32 relative overflow-hidden">
+    <div class="container-premium mx-auto relative z-10">
+        <div class="text-center mb-24" data-aos="fade-up">
+            <h2 class="text-xs font-black text-primary uppercase tracking-[0.3em] mb-4">Voice of the Community</h2>
+            <h3 class="text-4xl md:text-5xl font-black text-main tracking-tight">Trusted by Professionals</h3>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% if recent_feedback %}
+                {% for feedback in recent_feedback %}
+                <div class="glass-panel p-10 relative group hover:-translate-y-2 transition-all duration-500 border border-white/5" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+                    <div class="flex items-center gap-2 mb-8 text-amber-400">
+                        {% for i in range(feedback.rating) %}
+                        <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1">star</span>
+                        {% endfor %}
+                    </div>
+                    <p class="text-main font-bold italic mb-10 text-lg leading-relaxed">"{{ feedback.comment or 'Revolutionized how we interpret customer feedback strings.' }}"</p>
+                    <div class="flex items-center gap-5 mt-auto pt-8 border-t border-white/5">
+                        <div class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-sm uppercase shadow-lg shadow-primary/20">
+                            {{ (feedback.user.full_name[0] if feedback.user else "S") }}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-sm font-black text-main">{{ feedback.user.full_name if feedback.user else "System User" }}</span>
+                            <span class="text-[10px] text-primary font-bold uppercase tracking-widest">{{ feedback.created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Static High-Quality Placeholder -->
+                <div class="glass-panel p-10 bg-primary/5 border border-primary/20 rounded-[2.5rem] col-span-full text-center">
+                    <p class="text-primary font-black uppercase tracking-widest">Global community feedback arriving shortly.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="px-6 py-40 text-center relative overflow-hidden bg-card border-t border-main">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--accent-primary-transparent),transparent_70%)] opacity-30"></div>
+    <div class="container-premium mx-auto relative z-10" data-aos="zoom-in">
+        <h2 class="text-5xl md:text-8xl font-black text-main tracking-tighter mb-8 leading-none">
+            Scale Your <span class="text-primary">Intelligence</span>
+        </h2>
+        <p class="text-xl md:text-2xl text-muted max-w-2xl mx-auto leading-relaxed mb-16 font-medium">
+            Join enterprise teams and researchers leveraging SentimentAI for mission-critical emotional data processing.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-6">
+            <a href="{{ url_for('register') }}" class="btn-primary h-20 px-12 rounded-2xl font-black text-2xl shadow-3xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all group">
+                <span class="material-symbols-outlined mr-4 group-hover:rotate-12 transition-transform text-3xl">rocket_launch</span>
+                <span>Deploy Engine Free</span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const demoInput = document.getElementById('demo-input');
+    const charCount = document.getElementById('demo-char-count');
+    const demoBtn = document.getElementById('demo-btn');
+    const demoResult = document.getElementById('demo-result');
+    const demoSignup = document.getElementById('demo-signup-prompt');
+
+    if (demoInput) {
+        demoInput.addEventListener('input', () => {
+            const len = demoInput.value.length;
+            if (charCount) {
+                charCount.textContent = len;
+                if (len > 200) {
+                    demoInput.value = demoInput.value.substring(0, 200);
+                    charCount.textContent = 200;
+                    charCount.classList.add('text-accent-danger');
+                } else {
+                    charCount.classList.remove('text-accent-danger');
+                }
+            }
+        });
+    }
+
+    // Update word count on input
+    if (demoInput) {
+        demoInput.addEventListener('input', () => {
+            const words = demoInput.value.trim().split(/\s+/).filter(w => w.length > 0);
+            const wc = document.getElementById('demo-word-count');
+            if (wc) {
+                wc.textContent = words.length + ' word' + (words.length !== 1 ? 's' : '');
+                wc.classList.toggle('text-accent-danger', words.length > 0 && words.length < 2);
+                wc.classList.toggle('text-accent-success', words.length >= 2);
+                wc.classList.toggle('text-muted', words.length === 0);
+            }
+        });
+    }
+
+    if (demoBtn) {
+        demoBtn.addEventListener('click', async () => {
+            const text = demoInput ? demoInput.value.trim() : '';
+            const errorBox = document.getElementById('demo-error');
+            const demoResult = document.getElementById('demo-result');
+            const demoSignup = document.getElementById('demo-signup-prompt');
+
+            // Hide previous results/errors
+            if (errorBox) { errorBox.classList.add('hidden'); errorBox.textContent = ''; }
+            if (demoResult) { demoResult.classList.add('hidden'); demoResult.classList.remove('flex'); }
+
+            const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+            if (wordCount < 2) {
+                if (errorBox) {
+                    errorBox.textContent = `Please enter at least 2 words (${wordCount} given).`;
+                    errorBox.classList.remove('hidden');
+                }
+                return;
+            }
+
+            // Show loading state
+            demoBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-base">sync</span>&nbsp;Analyzing...';
+            demoBtn.disabled = true;
+            demoBtn.style.opacity = '0.7';
+
+            try {
+                const resp = await fetch('/api/demo-analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await resp.json();
+
+                if (!resp.ok || data.error) {
+                    if (errorBox) {
+                        errorBox.textContent = data.error || 'Analysis failed. Please try again.';
+                        errorBox.classList.remove('hidden');
+                    }
+                    demoBtn.innerHTML = 'Analyze Now';
+                    demoBtn.disabled = false;
+                    demoBtn.style.opacity = '1';
+                    return;
+                }
+
+                // Color map
+                const colorMap = {
+                    'accent-success': { text: 'text-accent-success', ring: 'ring-accent-success/30', dot: 'bg-accent-success' },
+                    'accent-warning': { text: 'text-accent-warning', ring: 'ring-accent-warning/30', dot: 'bg-accent-warning' },
+                    'accent-danger':  { text: 'text-accent-danger',  ring: 'ring-accent-danger/30',  dot: 'bg-accent-danger' },
+                };
+                const c = colorMap[data.color_class] || colorMap['accent-success'];
+
+                // Populate result panel
+                const emojiEl = document.getElementById('demo-result-emoji');
+                emojiEl.className = `w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-2xl ring-8 transition-all duration-500 ${c.dot} ${c.ring}`;
+                emojiEl.textContent = data.emoji;
+
+                const labelEl = document.getElementById('demo-result-label');
+                labelEl.className = `text-2xl font-black uppercase tracking-widest mb-1 ${c.text}`;
+                labelEl.textContent = data.label;
+
+                document.getElementById('demo-result-confidence').textContent = `${data.confidence}% confidence`;
+
+                // Stat chips
+                const chips = document.getElementById('demo-result-chips');
+                chips.innerHTML = `
+                    <span class="px-4 py-1.5 rounded-full text-xs font-bold border border-main text-muted">Polarity: ${data.polarity > 0 ? '+' : ''}${data.polarity}</span>
+                    <span class="px-4 py-1.5 rounded-full text-xs font-bold border border-main text-muted">Subjectivity: ${data.subjectivity}%</span>
+                `;
+
+                // Swap states
+                document.getElementById('demo-input-state').classList.add('hidden');
+                document.getElementById('demo-result-state').classList.remove('hidden');
+
+            } catch (err) {
+                if (errorBox) {
+                    errorBox.textContent = 'Network error. Please try again.';
+                    errorBox.classList.remove('hidden');
+                }
+                demoBtn.innerHTML = 'Analyze Now';
+                demoBtn.disabled = false;
+                demoBtn.style.opacity = '1';
+            }
+        });
+    }
+
+    // Reset button — lets user analyze another text
+    const resetBtn = document.getElementById('demo-reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            // Clear textarea and counters
+            if (demoInput) { demoInput.value = ''; demoInput.focus(); }
+            const wc = document.getElementById('demo-word-count');
+            if (wc) { wc.textContent = '0 words'; wc.className = 'text-xs font-black text-muted tabular-nums'; }
+
+            // Swap back to input state
+            document.getElementById('demo-result-state').classList.add('hidden');
+            document.getElementById('demo-input-state').classList.remove('hidden');
+
+            // Reset button state
+            demoBtn.innerHTML = 'Analyze Now';
+            demoBtn.disabled = false;
+            demoBtn.style.opacity = '1';
+        });
+    }
+});
+</script>
+{% endblock %}

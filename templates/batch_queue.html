@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Processing Queue - SentimentAI{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-aos="fade-in">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('analyze') }}" class="w-12 h-12 rounded-xl bg-card border border-main text-muted hover:text-primary flex items-center justify-center transition-all">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <div>
+                <h2 class="text-3xl font-black text-main tracking-tight flex items-center gap-3">
+                    Processing Queue
+                </h2>
+                <p class="text-muted font-medium text-sm">Analyze each file individually. Click "Analyze" to process one at a time.</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-wider border border-primary/20">
+                {{ queue_items|length }} Files Queued
+            </span>
+            <a href="{{ url_for('analyze') }}" class="h-10 px-5 rounded-xl font-bold bg-main border border-main text-main hover:bg-elevated flex items-center gap-2 transition-all text-sm">
+                <span class="material-symbols-outlined text-sm">add</span> Upload More
+            </a>
+        </div>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="card-elevated glass-panel p-6 mb-8 border-l-4 border-primary flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined">info</span>
+        </div>
+        <div>
+            <h4 class="text-sm font-black text-main mb-1">How It Works</h4>
+            <p class="text-xs text-muted font-medium leading-relaxed">Click <strong>Analyze</strong> on any file to process it. You'll see a full report with WordCloud, sentiment tokens, and charts. After reviewing, use <strong>"Back to Queue"</strong> to return here and process the next file.</p>
+        </div>
+    </div>
+
+    <!-- Queue Cards -->
+    {% if queue_items %}
+    <div class="space-y-4">
+        {% for item in queue_items %}
+        <div class="card-elevated glass-panel border border-main p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group hover:border-primary/20 transition-all">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-main flex items-center justify-center text-muted group-hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-2xl">description</span>
+                </div>
+                <div>
+                    <h5 class="text-base font-black text-main">{{ item.original_name }}</h5>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span class="text-[10px] font-bold text-muted uppercase tracking-widest">#{{ loop.index }} of {{ queue_items|length }}</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase border border-accent-warning/30 bg-accent-warning/10 text-accent-warning">
+                            <span class="material-symbols-outlined text-[12px] animate-pulse">hourglass_top</span> Pending
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('analyze_queue', index=item.original_index) }}" class="inline m-0" onsubmit="handleAnalyzeClick(this)">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="h-12 px-8 rounded-xl font-black bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 flex items-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-lg">bolt</span> Analyze
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card-elevated glass-panel p-16 text-center">
+        <span class="material-symbols-outlined text-6xl text-muted opacity-20 mb-6">inbox</span>
+        <h3 class="text-xl font-black text-main mb-2">Queue is Empty</h3>
+        <p class="text-sm text-muted mb-8 max-w-sm mx-auto">All files have been processed or the queue hasn't been initialized.</p>
+        <a href="{{ url_for('analyze') }}" class="btn-primary inline-flex h-12 px-8 rounded-xl font-black items-center gap-2">
+            <span class="material-symbols-outlined">add</span> Start New Analysis
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function handleAnalyzeClick(form) {
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-lg">sync</span> Processing...';
+    btn.classList.add('opacity-70', 'cursor-wait');
+}
+</script>
+{% endblock %}

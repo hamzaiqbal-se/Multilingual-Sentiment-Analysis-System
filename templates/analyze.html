@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+{% block title %}Analyze Text - SentimentAI{% endblock %}
+{% block extra_css %}
+<style>
+/* ── Mode Tabs ── */
+.tab-btn {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    font-size: 0.8rem; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    transition: all 0.2s ease;
+    border: none; cursor: pointer;
+    color: var(--text-muted);
+    background: transparent;
+}
+.tab-btn:hover { color: var(--text-main); background: var(--bg-elevated); }
+.tab-btn.active {
+    background: var(--accent-primary);
+    color: #fff;
+    box-shadow: 0 4px 24px rgba(59,130,246,.35);
+}
+
+/* ── Mode Cards ── */
+.mode-card {
+    cursor: pointer;
+    border-radius: 1rem;
+    border: 2px solid var(--border-color, rgba(0,0,0,0.1));
+    padding: 1.25rem;
+    transition: all 0.25s ease;
+    position: relative; overflow: hidden;
+}
+.mode-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0;
+    background: linear-gradient(135deg,rgba(59,130,246,0.08),transparent);
+    transition: opacity 0.3s;
+}
+.mode-card:hover { transform: translateY(-2px); border-color: var(--accent-primary); }
+.mode-card:hover::before { opacity: 1; }
+.mode-card.selected {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(59,130,246,.12), 0 8px 24px rgba(59,130,246,.08);
+}
+.mode-card.selected::before { opacity: 1; }
+.mode-card .check-icon { opacity: 0; transform: scale(0.4); transition: all 0.2s ease; }
+.mode-card.selected .check-icon { opacity: 1; transform: scale(1); }
+
+/* ── Dropzone ── */
+#dropzone { transition: all 0.3s ease; }
+#dropzone.drag-over {
+    border-color: var(--accent-primary) !important;
+    background: rgba(59,130,246,0.05) !important;
+    transform: scale(1.01);
+}
+
+/* ── Analyze button pulse ── */
+@keyframes btn-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)} 50%{box-shadow:0 0 0 8px rgba(59,130,246,0)} }
+#analyzeBtn:not(:disabled) { animation: btn-pulse 2.5s infinite; }
+#analyzeBtn:disabled { opacity: 0.45; cursor: not-allowed; animation: none; }
+
+/* ── Word count badge ── */
+.count-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem; font-weight: 800;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+.count-badge.ready { color: #22c55e; border-color: #22c55e; background: rgba(34,197,94,0.08); }
+
+/* ── Tip row ── */
+.tip-row { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+.tip-row:last-child { border-bottom: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-aos="fade-in">
+
+    <!-- ── Page Header ── -->
+    <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <p class="text-xs font-black text-primary uppercase tracking-[0.25em] mb-2">NLP Engine</p>
+            <h1 class="text-3xl md:text-4xl font-black text-main leading-tight">Analysis Workspace</h1>
+            <p class="text-muted font-medium mt-2 text-sm">Type text manually or batch-upload documents for deep sentiment evaluation.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-main text-xs font-bold text-muted">
+                <span class="material-symbols-outlined text-primary text-sm">psychology</span> ML-Powered
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-main text-xs font-bold text-muted">
+                <span class="material-symbols-outlined text-accent-success text-sm">speed</span> Real-Time
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-main text-xs font-bold text-muted">
+                <span class="material-symbols-outlined text-accent-secondary text-sm">cloud</span> WordCloud
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- ── Main Card ── -->
+        <div class="lg:col-span-2">
+            <div class="card-elevated glass-panel border border-main overflow-hidden">
+
+                <!-- Tab Bar -->
+                <div class="flex items-center gap-2 px-6 pt-6 pb-0">
+                    <button type="button" id="tab-btn-manual" onclick="switchTab('manual')" class="tab-btn active">
+                        <span class="material-symbols-outlined text-base">edit_note</span> Manual Entry
+                    </button>
+                    <button type="button" id="tab-btn-file" onclick="switchTab('file')" class="tab-btn">
+                        <span class="material-symbols-outlined text-base">folder_open</span> File Upload
+                    </button>
+                </div>
+                <div class="h-px bg-main mx-6 mt-4"></div>
+
+                <form method="POST" action="{{ url_for('analyze') }}" enctype="multipart/form-data" id="analysisForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="process_mode" id="processMode" value="combined">
+
+                    <div class="p-6 md:p-8">
+
+                        <!-- ── Manual Entry ── -->
+                        <div id="view-manual" class="space-y-4">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-xs font-black text-muted uppercase tracking-widest">Input Text</label>
+                                <div class="flex gap-2">
+                                    <span id="wordBadge" class="count-badge">
+                                        <span class="material-symbols-outlined text-[12px]">format_size</span>
+                                        <span id="wordCount">0</span> words
+                                    </span>
+                                    <span class="count-badge">
+                                        <span class="material-symbols-outlined text-[12px]">drag_indicator</span>
+                                        <span id="charCount">0</span> chars
+                                    </span>
+                                </div>
+                            </div>
+                            <textarea id="text" name="text" rows="10"
+                                class="w-full bg-main/50 border-2 border-main rounded-2xl p-6 text-base font-medium focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-main placeholder-muted/40 leading-relaxed"
+                                placeholder="Paste or type your text here (minimum 2 words)..."></textarea>
+                            <p id="word-hint" class="text-[11px] font-bold text-accent-danger px-1 hidden">⚠ Minimum 2 words required to run analysis.</p>
+                        </div>
+
+                        <!-- ── File Upload ── -->
+                        <div id="view-file" class="hidden space-y-6">
+                            <label class="block text-xs font-black text-muted uppercase tracking-widest">Upload Files</label>
+                            <div id="dropzone"
+                                class="relative h-52 border-2 border-dashed border-main rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-all group"
+                                onclick="document.getElementById('fileInput').click()">
+                                <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <span class="material-symbols-outlined text-3xl text-primary">cloud_upload</span>
+                                </div>
+                                <p class="font-black text-main text-sm">Click to browse or drag &amp; drop</p>
+                                <p class="text-xs text-muted mt-1">Accepts <span class="text-primary font-bold">.txt</span> files only &middot; Multiple files supported</p>
+                            </div>
+                            <input type="file" id="fileInput" name="file" accept=".txt" multiple class="hidden" onchange="handleFileSelect(this)">
+                            <div id="fileQueue" class="space-y-2"></div>
+
+                            <!-- Mode Selector (2+ files) -->
+                            <div id="modeSelector" class="hidden space-y-4 pt-4 border-t border-main">
+                                <label class="flex items-center gap-2 text-xs font-black text-muted uppercase tracking-widest">
+                                    <span class="material-symbols-outlined text-primary text-sm">tune</span>
+                                    Processing Mode
+                                </label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="mode-card selected" id="modeCardCombined" onclick="selectMode('combined')">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                <span class="material-symbols-outlined">merge</span>
+                                            </div>
+                                            <div class="check-icon w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white">
+                                                <span class="material-symbols-outlined text-sm">check</span>
+                                            </div>
+                                        </div>
+                                        <h5 class="text-sm font-black text-main mb-1">Combined Analysis</h5>
+                                        <p class="text-[11px] text-muted font-medium leading-relaxed">Merge all files into one batch and analyze together for a unified report.</p>
+                                    </div>
+                                    <div class="mode-card" id="modeCardSeparate" onclick="selectMode('separate')">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <div class="w-10 h-10 rounded-xl bg-accent-secondary/10 flex items-center justify-center text-accent-secondary">
+                                                <span class="material-symbols-outlined">account_tree</span>
+                                            </div>
+                                            <div class="check-icon w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white">
+                                                <span class="material-symbols-outlined text-sm">check</span>
+                                            </div>
+                                        </div>
+                                        <h5 class="text-sm font-black text-main mb-1">Individual Analysis</h5>
+                                        <p class="text-[11px] text-muted font-medium leading-relaxed">Process each file separately with dedicated reports and individual queuing.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Action Bar ── -->
+                    <div class="px-6 md:px-8 py-5 bg-elevated/30 border-t border-main flex justify-between items-center gap-4 flex-wrap">
+                        <button type="button" onclick="clearAll()"
+                            class="flex items-center gap-2 text-sm font-bold text-muted hover:text-accent-danger transition-colors">
+                            <span class="material-symbols-outlined text-base">delete_sweep</span> Clear All
+                        </button>
+                        <button type="submit" id="analyzeBtn" disabled
+                            class="btn-primary h-14 px-10 rounded-2xl font-black text-base shadow-2xl shadow-primary/30 flex items-center gap-3 transition-all hover:scale-[1.03] active:scale-[0.97]">
+                            <span class="material-symbols-outlined text-xl">bolt</span>
+                            <span id="analyzeBtnText">Run Analysis</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Sidebar ── -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Pro Tips -->
+            <div class="card-elevated glass-panel p-6 border border-main">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-9 h-9 rounded-xl bg-accent-warning/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-accent-warning text-lg">lightbulb</span>
+                    </div>
+                    <h4 class="text-sm font-black text-main uppercase tracking-widest">Pro Tips</h4>
+                </div>
+                <div>
+                    <div class="tip-row">
+                        <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">check_circle</span>
+                        <p class="text-xs font-medium text-muted leading-relaxed"><strong class="text-main">2 word minimum</strong> — required for sentiment scoring.</p>
+                    </div>
+                    <div class="tip-row">
+                        <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">folder_zip</span>
+                        <p class="text-xs font-medium text-muted leading-relaxed"><strong class="text-main">Batch upload</strong> — drag multiple <code class="text-primary">.txt</code> files at once.</p>
+                    </div>
+                    <div class="tip-row">
+                        <span class="material-symbols-outlined text-primary text-base shrink-0 mt-0.5">merge</span>
+                        <p class="text-xs font-medium text-muted leading-relaxed"><strong class="text-main">Combined:</strong> All files merged into one unified analytical report.</p>
+                    </div>
+                    <div class="tip-row">
+                        <span class="material-symbols-outlined text-accent-secondary text-base shrink-0 mt-0.5">account_tree</span>
+                        <p class="text-xs font-medium text-muted leading-relaxed"><strong class="text-main">Individual:</strong> Each file gets its own dedicated report &amp; queue slot.</p>
+                    </div>
+                    <div class="tip-row">
+                        <span class="material-symbols-outlined text-accent-success text-base shrink-0 mt-0.5">cloud</span>
+                        <p class="text-xs font-medium text-muted leading-relaxed"><strong class="text-main">WordClouds</strong> and sentiment tokens are auto-generated for every run.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What You Get -->
+            <div class="card-elevated glass-panel p-6 border border-main">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-lg">stars</span>
+                    </div>
+                    <h4 class="text-sm font-black text-main uppercase tracking-widest">What You Get</h4>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-primary text-sm">sentiment_satisfied</span>
+                        </span>
+                        <span class="text-xs font-medium text-muted">Sentiment score &amp; label</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-accent-secondary/10 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-accent-secondary text-sm">bar_chart</span>
+                        </span>
+                        <span class="text-xs font-medium text-muted">Confidence &amp; evaluation matrix</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-accent-success/10 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-accent-success text-sm">cloud</span>
+                        </span>
+                        <span class="text-xs font-medium text-muted">Word frequency cloud</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-accent-warning/10 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-accent-warning text-sm">translate</span>
+                        </span>
+                        <span class="text-xs font-medium text-muted">Language detection</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-accent-danger/10 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-accent-danger text-sm">history</span>
+                        </span>
+                        <span class="text-xs font-medium text-muted">Auto-saved to history</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentMode = 'manual';
+let queuedFiles = [];
+let processMode = 'combined';
+
+function switchTab(mode) {
+    currentMode = mode;
+    ['tab-btn-manual','tab-btn-file'].forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById(mode === 'manual' ? 'tab-btn-manual' : 'tab-btn-file').classList.add('active');
+    document.getElementById('view-manual').classList.toggle('hidden', mode !== 'manual');
+    document.getElementById('view-file').classList.toggle('hidden', mode === 'manual');
+    checkState();
+}
+
+function selectMode(mode) {
+    processMode = mode;
+    document.getElementById('processMode').value = mode;
+    document.getElementById('modeCardCombined').classList.toggle('selected', mode === 'combined');
+    document.getElementById('modeCardSeparate').classList.toggle('selected', mode === 'separate');
+    
+    const btnText = document.getElementById('analyzeBtnText');
+    if (queuedFiles.length > 1) {
+        btnText.textContent = mode === 'combined' ? 'Run Combined Analysis' : 'Send to Queue';
+    } else {
+        btnText.textContent = 'Run Analysis';
+    }
+}
+
+function handleFileSelect(input) {
+    const dt = new DataTransfer();
+    queuedFiles.forEach(f => dt.items.add(f));
+    Array.from(input.files).forEach(f => {
+        if (f.name.endsWith('.txt') && !queuedFiles.some(qf => qf.name === f.name && qf.size === f.size)) {
+            queuedFiles.push(f); dt.items.add(f);
+        }
+    });
+    input.files = dt.files;
+    renderQueue(); checkState();
+}
+
+function renderQueue() {
+    const q = document.getElementById('fileQueue');
+    const ms = document.getElementById('modeSelector');
+    q.innerHTML = '';
+    ms.classList.toggle('hidden', queuedFiles.length < 2);
+    if (queuedFiles.length < 2) selectMode('combined');
+
+    queuedFiles.forEach((f, i) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-3 p-4 bg-main/40 border border-main rounded-xl hover:border-primary/30 transition-all';
+        div.innerHTML = `
+            <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-primary text-sm">description</span>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-main truncate">${f.name}</p>
+                <p class="text-[11px] text-muted font-medium">${(f.size / 1024).toFixed(1)} KB</p>
+            </div>
+            <button type="button" onclick="removeFile(${i})"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-accent-danger/10 hover:text-accent-danger transition-all">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>`;
+        q.appendChild(div);
+    });
+    rebuildFileInput();
+}
+
+function removeFile(i) { queuedFiles.splice(i, 1); renderQueue(); checkState(); }
+
+function rebuildFileInput() {
+    const dt = new DataTransfer();
+    queuedFiles.forEach(f => dt.items.add(f));
+    document.getElementById('fileInput').files = dt.files;
+}
+
+function clearAll() {
+    document.getElementById('text').value = '';
+    queuedFiles = []; renderQueue(); checkState();
+}
+
+function checkState() {
+    const btn = document.getElementById('analyzeBtn');
+    const hint = document.getElementById('word-hint');
+    if (currentMode === 'manual') {
+        const val = document.getElementById('text').value;
+        const words = val.trim().split(/\s+/).filter(w => w.length > 0).length;
+        document.getElementById('wordCount').textContent = words;
+        document.getElementById('charCount').textContent = val.length;
+        document.getElementById('wordBadge').classList.toggle('ready', words >= 2);
+        btn.disabled = words < 2;
+        if (hint) hint.classList.toggle('hidden', words === 0 || words >= 2);
+    } else {
+        btn.disabled = queuedFiles.length === 0;
+    }
+}
+
+document.getElementById('text').addEventListener('input', checkState);
+
+// Drag and drop
+const dropzone = document.getElementById('dropzone');
+['dragenter','dragover'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('drag-over'); }));
+['dragleave','drop'].forEach(evt => dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('drag-over'); }));
+dropzone.addEventListener('drop', e => {
+    Array.from(e.dataTransfer.files).forEach(f => {
+        if (f.name.endsWith('.txt') && !queuedFiles.some(qf => qf.name === f.name && qf.size === f.size)) queuedFiles.push(f);
+    });
+    renderQueue(); checkState();
+});
+</script>
+{% endblock %}

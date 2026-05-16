@@ -1,0 +1,231 @@
+{% extends "base.html" %} 
+{% block title %}Analysis History - SentimentAI{% endblock %} 
+{% block content %} 
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-aos="fade-in"> 
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6"> 
+        <div> 
+            <h2 class="text-3xl md:text-4xl font-black text-main mb-2 tracking-tight flex items-center gap-4"> 
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5"> 
+                    <span class="material-symbols-outlined text-3xl">history</span> 
+                </div> 
+                Analysis History 
+            </h2> 
+            <p class="text-muted font-medium">Review, filter, and export your past sentiment evaluations.</p> 
+        </div> 
+        <div class="flex flex-wrap items-center gap-4"> 
+            <button type="button" class="h-12 px-6 rounded-xl font-bold border border-accent-danger/20 text-accent-danger hover:bg-accent-danger hover:text-white transition-all flex items-center gap-2" onclick="document.getElementById('deleteAllModal').classList.remove('hidden')"> 
+                <span class="material-symbols-outlined text-xl">delete_forever</span> Clear All History 
+            </button> 
+            <a href="{{ url_for('export_data') }}" class="h-12 px-6 rounded-xl font-bold bg-main border border-main text-main hover:bg-elevated transition-colors flex items-center gap-2"> 
+                <span class="material-symbols-outlined text-xl">cloud_download</span> Export 
+            </a> 
+            <a href="{{ url_for('analyze') }}" class="btn-primary h-12 px-6 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 flex items-center gap-2"> 
+                <span class="material-symbols-outlined text-xl">add</span> New 
+            </a> 
+        </div> 
+    </div> 
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8"> 
+        <!-- Sidebar -->
+        <div class="lg:col-span-1"> 
+            <div class="card-elevated glass-panel sticky top-24 flex flex-col border border-main"> 
+                <div class="p-6 border-b border-main bg-elevated/50 backdrop-blur-md rounded-t-[1.5rem]"> 
+                    <h5 class="text-xs font-black text-muted uppercase tracking-widest flex items-center gap-3"> 
+                        <span class="material-symbols-outlined text-lg">folder_copy</span> Data Sources 
+                    </h5> 
+                </div> 
+                <div class="p-4 flex flex-col gap-1"> 
+                    <a href="{{ url_for('history', view='all') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all {% if view_type == 'all' and not selected_batch %}bg-primary text-white shadow-lg shadow-primary/20{% else %}text-muted hover:bg-elevated hover:text-main{% endif %}"> 
+                        <span class="material-symbols-outlined text-xl">grid_view</span> Full History 
+                    </a> 
+                    <a href="{{ url_for('history', view='manual') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all {% if view_type == 'manual' %}bg-primary text-white shadow-lg shadow-primary/20{% else %}text-muted hover:bg-elevated hover:text-main{% endif %}"> 
+                        <span class="material-symbols-outlined text-xl">keyboard</span> Manual Entries 
+                    </a> 
+                    <a href="{{ url_for('history', view='batch') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all {% if view_type == 'batch' and not selected_batch %}bg-primary text-white shadow-lg shadow-primary/20{% else %}text-muted hover:bg-elevated hover:text-main{% endif %}"> 
+                        <span class="material-symbols-outlined text-xl">topic</span> Batch Files 
+                    </a> 
+                </div> 
+
+                {% if batch_groups %} 
+                <div class="mt-2 p-6 border-t border-main flex flex-col min-h-0 grow"> 
+                    <div class="flex items-center justify-between mb-4 shrink-0"> 
+                        <h6 class="text-[10px] font-black text-muted uppercase tracking-[0.2em]">Recent Batches</h6> 
+                    </div> 
+                    <div class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden max-h-[50vh] pr-2 styled-scrollbar" style="scrollbar-gutter: stable;"> 
+                        {% for batch in batch_groups %} 
+                        <a href="{{ url_for('history', batch_id=batch.batch_id) }}" class="group/item flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all {% if selected_batch and selected_batch.batch_id == batch.batch_id %} bg-elevated text-primary border border-primary/20 shadow-sm {% else %} text-muted hover:bg-elevated hover:text-main border border-transparent {% endif %}"> 
+                            <span class="flex items-center gap-3 truncate"> 
+                                <span class="material-symbols-outlined text-lg {% if selected_batch and selected_batch.batch_id == batch.batch_id %}text-primary{% else %}text-muted{% endif %}">folder</span> 
+                                <span class="truncate">{{ batch.batch_name }}</span> 
+                            </span> 
+                            <span class="bg-main text-[9px] font-black px-2 py-1 rounded-lg border border-main">{{ batch.total_items }}</span> 
+                        </a> 
+                        {% endfor %} 
+                    </div> 
+                </div> 
+                {% endif %} 
+            </div> 
+        </div> 
+
+        <!-- Main Content -->
+        <div class="lg:col-span-3 flex flex-col gap-6"> 
+            <div class="card-elevated glass-panel p-8 border border-main"> 
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6"> 
+                    <div class="flex-grow"> 
+                        {% if selected_batch %} 
+                        <div class="flex flex-col gap-2"> 
+                            <h4 class="text-xl font-black text-main flex items-center gap-3"> 
+                                <span class="material-symbols-outlined text-primary">description</span> {{ selected_batch.batch_name }} 
+                            </h4> 
+                            <div class="flex items-center gap-4 text-xs font-bold text-muted"> 
+                                <span class="px-2 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20">{{ selected_batch.total_items }} analyses found</span> 
+                                <span>Report created {{ selected_batch.created_at.strftime('%b %d, %Y') }}</span> 
+                            </div> 
+                        </div> 
+                        {% else %} 
+                        <h4 class="text-xl font-black text-main"> 
+                            {% if view_type == 'manual' %}Manual Entries{% elif view_type == 'batch' %}Batch Documents{% else %}Complete History{% endif %} 
+                        </h4> 
+                        {% endif %} 
+                    </div> 
+                    {% if selected_batch %} 
+                    <div class="flex flex-wrap gap-3"> 
+                        <a href="{{ url_for('view_batch_full', batch_id=selected_batch.batch_id) }}" class="h-10 px-5 rounded-xl text-xs font-black bg-main border border-main text-main hover:bg-elevated transition-all flex items-center gap-2"> 
+                            <span class="material-symbols-outlined text-lg">visibility</span> View Summary 
+                        </a> 
+                        <button type="button" class="h-10 px-5 rounded-xl text-xs font-black text-accent-danger border border-accent-danger/20 hover:bg-accent-danger hover:text-white transition-all flex items-center gap-2" onclick="document.getElementById('deleteBatchModal').classList.remove('hidden')"> 
+                            <span class="material-symbols-outlined text-lg">folder_delete</span> Delete Batch 
+                        </button> 
+                    </div> 
+                    {% endif %} 
+                </div> 
+
+                <form method="GET" action="{{ url_for('history') }}" class="flex flex-col md:flex-row gap-4"> 
+                    {% if selected_batch %} 
+                    <input type="hidden" name="batch_id" value="{{ selected_batch.batch_id }}"> 
+                    {% else %} 
+                    <input type="hidden" name="view" value="{{ view_type }}"> 
+                    {% endif %} 
+                    <div class="relative flex-grow"> 
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-muted text-lg pointer-events-none">search</span> 
+                        <input type="text" name="search" class="w-full h-12 pl-12 pr-4 bg-main/50 border-2 border-main rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm font-semibold" placeholder="Search content..." value="{{ search }}"> 
+                    </div> 
+                    <div class="w-full md:w-48"> 
+                        <select name="sentiment" class="w-full h-12 px-4 bg-main/50 border-2 border-main rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-sm font-bold text-main"> 
+                            <option value="">Every Sentiment</option> 
+                            <option value="Positive" {% if sentiment_filter=='Positive' %}selected{% endif %}>Positive</option> 
+                            <option value="Negative" {% if sentiment_filter=='Negative' %}selected{% endif %}>Negative</option> 
+                            <option value="Neutral" {% if sentiment_filter=='Neutral' %}selected{% endif %}>Neutral</option> 
+                        </select> 
+                    </div> 
+                    <button type="submit" class="h-12 px-8 rounded-xl font-bold bg-main border border-main text-main">Update</button> 
+                </form> 
+            </div> 
+
+            <div id="results-container" class="flex flex-col gap-4"> 
+                {% if analyses.items %} 
+                {% for analysis in analyses.items %} 
+                <div class="group card-elevated glass-panel p-6 border border-main hover:border-primary/30 transition-all relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 overflow-hidden"> 
+                    <div class="absolute left-0 top-0 bottom-0 w-1 {% if analysis.sentiment == 'Positive' %}bg-accent-success{% elif analysis.sentiment == 'Negative' %}bg-accent-danger{% else %}bg-muted{% endif %}"></div> 
+                    <div class="flex-grow min-w-0"> 
+                        <div class="flex items-center gap-3 mb-4 flex-wrap"> 
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap {% if 'Positive' in analysis.sentiment %}bg-accent-success/10 text-accent-success{% elif 'Negative' in analysis.sentiment %}bg-accent-danger/10 text-accent-danger{% else %}bg-muted/10 text-muted{% endif %}"> {{ analysis.sentiment }} </span> 
+                            <span class="text-[10px] font-black text-muted flex items-center gap-1.5 px-2 py-1 rounded-lg bg-main border border-main uppercase tracking-widest"> {{ analysis.confidence }}% Conf. </span> 
+                            {% if analysis.language %}<span class="text-[10px] font-black text-primary flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 uppercase tracking-widest"> {% if analysis.language == 'EN' %}🇬🇧{% elif analysis.language == 'UR' %}🇵🇰{% elif analysis.language == 'FR' %}🇫🇷{% elif analysis.language == 'DE' %}🇩🇪{% elif analysis.language == 'ES' %}🇪🇸{% elif analysis.language == 'AR' %}🇸🇦{% elif analysis.language == 'HI' %}🇮🇳{% elif analysis.language == 'JA' %}🇯🇵{% elif analysis.language == 'KO' %}🇰🇷{% elif analysis.language == 'PT' %}🇧🇷{% elif analysis.language == 'RU' %}🇷🇺{% elif analysis.language == 'IT' %}🇮🇹{% elif analysis.language == 'TR' %}🇹🇷{% elif analysis.language == 'NL' %}🇳🇱{% else %}🌐{% endif %} {{ analysis.language }} </span>{% endif %} 
+                        </div> 
+                        <p class="text-[0.9375rem] text-main font-semibold line-clamp-2">"{{ analysis.text_preview }}"</p> 
+                        {% if analysis.recommended_action %} 
+                        <p class="text-[0.75rem] text-primary font-bold italic mt-2 flex items-center gap-2"> 
+                            <span class="material-symbols-outlined text-xs">auto_awesome</span> {{ analysis.recommended_action|truncate(80) }} 
+                        </p> 
+                        {% endif %} 
+                    </div> 
+                    <div class="flex items-center gap-3 justify-end"> 
+                        <a href="{{ url_for('view_analysis', analysis_id=analysis.analysis_id) }}" class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/10"> 
+                            <span class="material-symbols-outlined text-xl">description</span> 
+                        </a> 
+                        <form method="POST" action="{{ url_for('delete_analysis', analysis_id=analysis.analysis_id) }}" onsubmit="return confirm('Delete this record?');"> 
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+                            <button type="submit" class="w-10 h-10 rounded-xl bg-accent-danger/10 text-accent-danger border border-accent-danger/20 flex items-center justify-center"> 
+                                <span class="material-symbols-outlined text-xl">delete</span> 
+                            </button> 
+                        </form> 
+                    </div> 
+                </div> 
+                {% endfor %} 
+
+                {% if analyses.pages > 1 %} 
+                <div class="mt-10 flex justify-center"> 
+                    <nav class="inline-flex gap-2 p-1.5 rounded-2xl bg-card border border-main shadow-lg"> 
+                        {% if analyses.has_prev %} 
+                        <a href="{{ url_for('history', page=analyses.prev_num, view=view_type, batch_id=selected_batch.batch_id if selected_batch else None) }}" class="w-10 h-10 flex items-center justify-center rounded-xl text-muted hover:bg-elevated transition-all"> 
+                            <span class="material-symbols-outlined">chevron_left</span> 
+                        </a> 
+                        {% endif %} 
+                        {% for page_num in analyses.iter_pages() %} 
+                        {% if page_num %} 
+                        <a href="{{ url_for('history', page=page_num, view=view_type, batch_id=selected_batch.batch_id if selected_batch else None) }}" class="w-10 h-10 flex items-center justify-center rounded-xl text-xs font-black {% if page_num == analyses.page %}bg-primary text-white shadow-lg{% else %}text-muted hover:bg-elevated{% endif %}"> {{ page_num }} </a> 
+                        {% else %} 
+                        <span class="w-10 h-10 flex items-center justify-center text-muted">...</span> 
+                        {% endif %} 
+                        {% endfor %} 
+                        {% if analyses.has_next %} 
+                        <a href="{{ url_for('history', page=analyses.next_num, view=view_type, batch_id=selected_batch.batch_id if selected_batch else None) }}" class="w-10 h-10 flex items-center justify-center rounded-xl text-muted hover:bg-elevated transition-all"> 
+                            <span class="material-symbols-outlined">chevron_right</span> 
+                        </a> 
+                        {% endif %} 
+                    </nav> 
+                </div> 
+                {% endif %} 
+                {% else %} 
+                <div class="card-elevated glass-panel p-20 flex flex-col items-center justify-center text-center border-2 border-dashed border-main rounded-[2.5rem]"> 
+                    <span class="material-symbols-outlined text-6xl text-muted opacity-30 mb-8">inventory</span> 
+                    <h3 class="text-2xl font-black text-main mb-4">No results detected</h3> 
+                    <a href="{{ url_for('analyze') }}" class="btn-primary py-4 px-10 rounded-2xl font-black">Begin Analysis</a> 
+                </div> 
+                {% endif %} 
+            </div> 
+        </div> 
+    </div> 
+</div> 
+
+<!-- Modals -->
+<div id="deleteAllModal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md hidden flex items-center justify-center p-6"> 
+    <div class="w-full max-w-md bg-card border border-main rounded-[2.5rem] p-10 text-center shadow-2xl"> 
+        <span class="material-symbols-outlined text-5xl text-accent-danger mb-8">warning</span> 
+        <h5 class="text-3xl font-black text-main mb-4">Clear All History?</h5> 
+        <p class="text-muted mb-10">This will permanently delete all your analysis records. This action cannot be undone.</p> 
+        <div class="flex gap-4 mt-10"> 
+            <button type="button" class="flex-1 py-4 rounded-2xl font-bold text-muted bg-main" onclick="document.getElementById('deleteAllModal').classList.add('hidden')">Cancel</button> 
+            <form method="POST" action="{{ url_for('clear_all_history') }}" class="flex-1"> 
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+                <button type="submit" class="w-full py-4 rounded-2xl font-black bg-accent-danger text-white">Delete All</button> 
+            </form> 
+        </div> 
+    </div> 
+</div> 
+
+{% if selected_batch %} 
+<div id="deleteBatchModal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md hidden flex items-center justify-center p-6"> 
+    <div class="w-full max-w-md bg-card border border-main rounded-[2.5rem] p-10 text-center shadow-2xl"> 
+        <span class="material-symbols-outlined text-5xl text-accent-danger mb-8">folder_delete</span> 
+        <h5 class="text-3xl font-black text-main mb-4">Delete Batch?</h5> 
+        <p class="text-muted mb-10">Delete <strong>{{ selected_batch.batch_name }}</strong> and all its associated analyses?</p> 
+        <div class="flex gap-4"> 
+            <button type="button" class="flex-1 py-4 rounded-2xl font-bold text-muted bg-main" onclick="document.getElementById('deleteBatchModal').classList.add('hidden')">Cancel</button> 
+            <form method="POST" action="{{ url_for('delete_batch', batch_id=selected_batch.batch_id) }}" class="flex-1"> 
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+                <button type="submit" class="w-full py-4 rounded-2xl font-black bg-accent-danger text-white">Delete Batch</button> 
+            </form> 
+        </div> 
+    </div> 
+</div> 
+{% endif %} 
+{% endblock %} 
+
+{% block extra_js %} 
+<script> 
+    // Custom modal handling if needed 
+</script> 
+{% endblock %} 
+{% block modals %}{{ super() }}{% endblock %}

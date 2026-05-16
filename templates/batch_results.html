@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}Batch Results - SentimentAI{% endblock %}
+{% block extra_css %}
+<style>
+.matrix-bar-bg { background: rgba(0,0,0,0.05); }
+.dark .matrix-bar-bg { background: rgba(255,255,255,0.05); }
+.matrix-bar-fill { height: 100%; border-radius: 9999px; transition: width 1s ease-out; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-aos="fade-in">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-lg shadow-primary/5">
+                <span class="material-symbols-outlined text-3xl">stacked_line_chart</span>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-main tracking-tight">Batch Report</h2>
+                <p class="text-muted font-medium text-sm">{{ analysis.file_name }}</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <form method="POST" action="{{ url_for('batch_results') }}" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" name="action" value="save_all" class="h-12 px-6 rounded-xl font-black bg-accent-success text-white shadow-lg shadow-accent-success/20 hover:shadow-accent-success/40 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">bookmark_add</span> Save to History
+                </button>
+            </form>
+            {% if session.get('multi_batch_queue') %}
+            <a href="{{ url_for('batch_queue') }}" class="h-12 px-6 rounded-xl font-black bg-accent-secondary/10 text-accent-secondary border border-accent-secondary/20 hover:bg-accent-secondary hover:text-white flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-xl">queue</span> Back to Queue
+            </a>
+            {% endif %}
+            <a href="{{ url_for('analyze') }}" class="h-12 px-6 rounded-xl font-black bg-main border border-main text-main hover:bg-elevated flex items-center justify-center transition-all gap-2">
+                <span class="material-symbols-outlined text-xl">add</span> New Analysis
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div class="card-elevated glass-panel p-6 border border-main text-center">
+            <p class="text-[10px] font-black text-muted uppercase tracking-widest mb-1">Total Items</p>
+            <h3 class="text-4xl font-black text-main">{{ analysis.total }}</h3>
+        </div>
+        <div class="card-elevated glass-panel p-6 border-b-4 border-accent-success text-center">
+            <p class="text-[10px] font-black text-accent-success uppercase tracking-widest mb-1">Positive</p>
+            <h3 class="text-4xl font-black text-accent-success">{{ analysis.positive_pct }}%</h3>
+        </div>
+        <div class="card-elevated glass-panel p-6 border-b-4 border-accent-danger text-center">
+            <p class="text-[10px] font-black text-accent-danger uppercase tracking-widest mb-1">Negative</p>
+            <h3 class="text-4xl font-black text-accent-danger">{{ analysis.negative_pct }}%</h3>
+        </div>
+        <div class="card-elevated glass-panel p-6 border-b-4 border-primary text-center">
+            <p class="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Avg Confidence</p>
+            <h3 class="text-4xl font-black text-primary">{{ analysis.avg_confidence }}%</h3>
+        </div>
+    </div>
+
+    <!-- Top Row Visuals -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <!-- Left: Distribution (SVG Pie) -->
+        <div class="card-elevated glass-panel p-8 flex flex-col items-center">
+            <h6 class="text-[10px] font-black text-muted uppercase tracking-widest mb-8 w-full">Sentiment Distribution</h6>
+            <div class="relative w-48 h-48 flex items-center justify-center">
+                {% set total = analysis.total if analysis.total > 0 else 1 %}
+                {% set pos_pct = analysis.positive / total %}
+                {% set neg_pct = analysis.negative / total %}
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#64748b" stroke-width="20" stroke-dasharray="{{ 251.2 * (1 - pos_pct - neg_pct) }} {{ 251.2 * (pos_pct + neg_pct) }}" stroke-dashoffset="{{ -251.2 * (pos_pct + neg_pct) }}"></circle>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f43f5e" stroke-width="20" stroke-dasharray="{{ 251.2 * neg_pct }} {{ 251.2 * (1 - neg_pct) }}" stroke-dashoffset="{{ -251.2 * pos_pct }}"></circle>
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" stroke-width="20" stroke-dasharray="{{ 251.2 * pos_pct }} {{ 251.2 * (1 - pos_pct) }}"></circle>
+                </svg>
+            </div>
+            <div class="flex gap-4 mt-6 text-[10px] font-black uppercase tracking-tighter">
+                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-accent-success"></div> Pos {{ analysis.positive }}</div>
+                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-accent-danger"></div> Neg {{ analysis.negative }}</div>
+                <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full" style="background:#64748b"></div> Neu {{ analysis.neutral }}</div>
+            </div>
+        </div>
+
+        <!-- Center: Strategic Insight -->
+        <div class="card-elevated glass-panel p-8 flex flex-col justify-center bg-primary text-white shadow-2xl shadow-primary/20">
+            <h6 class="text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-3">
+                <span class="material-symbols-outlined">auto_awesome</span> Strategic Analysis
+            </h6>
+            <h4 class="text-2xl font-black mb-4 leading-tight">{{ analysis.overall_sentiment }}</h4>
+            <p class="text-sm font-medium opacity-90 leading-relaxed">{{ analysis.overall_action }}</p>
+        </div>
+
+        <!-- Right: Overall Word Cloud -->
+        <div class="card-elevated glass-panel p-8 flex flex-col">
+            <h6 class="text-[10px] font-black text-muted uppercase tracking-widest mb-6 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">cloud</span> Batch Semantic Map
+            </h6>
+            {% if analysis.overall_wordcloud %}
+            <div class="grow rounded-2xl overflow-hidden bg-main/5 flex items-center justify-center p-4">
+                <img src="data:image/png;base64,{{ wordcloud_data }}" alt="Word Cloud" class="max-w-full h-auto object-contain">
+            </div>
+            {% else %}
+            <div class="grow rounded-2xl border-2 border-dashed border-main flex flex-col items-center justify-center text-center p-6">
+                <span class="material-symbols-outlined text-3xl text-muted mb-3">image_not_supported</span>
+                <p class="text-[10px] font-black text-muted uppercase">Cloud Not Generated</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Aggregated Tokens -->
+    <div class="card-elevated glass-panel p-8 mb-10">
+        <h6 class="text-[10px] font-black text-muted uppercase tracking-widest mb-6 flex items-center gap-3">
+            <span class="material-symbols-outlined text-accent-secondary">stars</span> Aggregated Sentiment Markers
+        </h6>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div>
+                <p class="text-[9px] font-black text-accent-success uppercase tracking-widest mb-3 opacity-60">Optimistic Markers</p>
+                <div class="flex flex-wrap gap-2">
+                    {% set has_pos = [] %}
+                    {% for item in analysis.results[:20] %}
+                        {% for word in item.positive_words[:2] %}
+                            {% if word not in has_pos %}
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-accent-success/10 text-accent-success border border-accent-success/20">{{ word }}</span>
+                            {% if has_pos.append(word) %}{% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% if not has_pos %}<span class="text-xs italic text-muted">No positive markers detected</span>{% endif %}
+                </div>
+            </div>
+            <div>
+                <p class="text-[9px] font-black text-accent-danger uppercase tracking-widest mb-3 opacity-60">Critical Markers</p>
+                <div class="flex flex-wrap gap-2">
+                    {% set has_neg = [] %}
+                    {% for item in analysis.results[:20] %}
+                        {% for word in item.negative_words[:2] %}
+                            {% if word not in has_neg %}
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-accent-danger/10 text-accent-danger border border-accent-danger/20">{{ word }}</span>
+                            {% if has_neg.append(word) %}{% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    {% if not has_neg %}<span class="text-xs italic text-muted">No critical markers detected</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card-elevated glass-panel overflow-hidden border border-main">
+        <div class="p-6 border-b border-main bg-main/10">
+            <h6 class="text-sm font-black text-main uppercase tracking-widest">Detail Breakdown</h6>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-main/5 text-[10px] font-black uppercase tracking-widest text-muted border-b border-main">
+                    <tr>
+                        <th class="px-6 py-4">#</th>
+                        <th class="px-6 py-4">Sample Text</th>
+                        <th class="px-6 py-4">Sentiment</th>
+                        <th class="px-6 py-4">Language</th>
+                        <th class="px-6 py-4">Recommendation</th>
+                        <th class="px-6 py-4">Clarity</th>
+                        <th class="px-6 py-4 text-right">Confidence</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-main/10">
+                    {% for result in analysis.results %}
+                    <tr class="hover:bg-main/50 transition-colors group">
+                        <td class="px-6 py-4 text-xs font-bold text-muted">{{ loop.index }}</td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-semibold text-main line-clamp-1 opacity-80 group-hover:opacity-100 transition-opacity">{{ result.text_preview }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase whitespace-nowrap {% if 'Positive' in result.sentiment %}bg-accent-success/10 text-accent-success{% elif 'Negative' in result.sentiment %}bg-accent-danger/10 text-accent-danger{% else %}bg-muted/10 text-muted{% endif %}">
+                                {{ result.sentiment }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if result.language %}
+                            <span class="text-xs font-bold">
+                                {% if result.language == 'EN' %}🇬🇧{% elif result.language == 'UR' %}🇵🇰{% elif result.language == 'FR' %}🇫🇷{% elif result.language == 'DE' %}🇩🇪{% elif result.language == 'ES' %}🇪🇸{% elif result.language == 'AR' %}🇸🇦{% elif result.language == 'HI' %}🇮🇳{% elif result.language == 'JA' %}🇯🇵{% elif result.language == 'KO' %}🇰🇷{% elif result.language == 'PT' %}🇧🇷{% elif result.language == 'RU' %}🇷🇺{% elif result.language == 'IT' %}🇮🇹{% elif result.language == 'TR' %}🇹🇷{% elif result.language == 'NL' %}🇳🇱{% else %}🌐{% endif %}
+                                <span class="text-[10px] text-muted ml-1">{{ result.language }}</span>
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-[11px] font-medium text-main line-clamp-1 italic opacity-70 group-hover:opacity-100 transition-opacity">
+                                {{ result.recommended_action or 'No recommendation' }}
+                            </p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-black {% if (result.clarity or 0) < 5 %}text-accent-warning{% else %}text-muted{% endif %}">{{ result.clarity or 0 }}%</span>
+                                <div class="w-12 h-1 matrix-bar-bg rounded-full overflow-hidden">
+                                    <div class="h-full {% if (result.clarity or 0) < 5 %}bg-accent-warning{% else %}bg-accent-secondary{% endif %} matrix-bar-fill" style="width: {{ result.clarity or 0 }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="inline-flex items-center gap-2">
+                                <span class="text-xs font-black text-main">{{ result.confidence }}%</span>
+                                <div class="w-16 h-1.5 matrix-bar-bg rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary matrix-bar-fill" style="width: {{ result.confidence }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
